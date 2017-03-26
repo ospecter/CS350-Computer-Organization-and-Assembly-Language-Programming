@@ -1,0 +1,62 @@
+#!/usr/bin/perl -w
+#
+#
+# Kyle C. Hale (c) 2017
+# This is a test harness for IIT CS 350 Spring 17 labs
+#
+#
+use strict;
+use Term::ANSIColor;
+
+scalar(@ARGV) == 2 or die usage();
+
+# Get Debugging output?
+my $DEBUG = 0;
+# Get verbose output?
+my $VERBOSE = 0;
+my $progname = shift;
+my $testfile = shift;
+
+print "# Testing $progname...\n";
+
+my $f = open(FILE, '<', $testfile) or die "Could not open testfile: '$!'\n";
+
+my $ntests = 0;
+my $passcnt = 0;
+
+while (<FILE>)  {
+	# Should be in format: ([c|b|f]	[INPUT]	[EXPECTED OUTPUT] [newline])*
+	if ($_ =~ /(^[cbf])\s+(.+)\s+(.+)/) {
+		my $str = "./$progname -$1 $2";
+		if ($DEBUG==1) {
+			print "testing $1 with '$str'\n";
+		}
+		my $output = (`$str`);
+		chomp $output;
+		print "Test #$ntests - ";
+		
+		if ($output eq $3) {
+			print color('bold green');
+			print "[PASS] ";
+			$passcnt += 1;
+		} else {
+			print color('bold red');
+			print "[FAIL] ";
+		}
+		print color('reset');
+
+		if ($VERBOSE == 1) {
+			print "INPUT: ". $2 . " OUTPUT: " . $output . " EXPECTED: " . $3 . " ";
+		}
+		print "\n";
+
+		$ntests += 1;
+	} 
+}
+
+my $grade = $passcnt/$ntests;
+print "$passcnt out of $ntests test cases passed\n";
+
+sub usage {
+	print "\nUsage: $0 <student-binary> <test-cases>\n\n";
+}
